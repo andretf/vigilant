@@ -1,0 +1,34 @@
+{
+  "name": "vigilant",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andretf/vigilant.git"
+  },
+  "keywords": [
+    "application",
+    "server",
+    "monitor"
+  ],
+  "author": "Andre Figueiredo <andretf@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/andretf/vigilant/issues"
+  },
+  "homepage": "https://github.com/andretf/vigilant#readme",
+  "devDependencies": {
+    "bootstrap": "^3.3.6",
+    "browser-sync": "^2.11.1",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.0",
+    "gulp-filter": "^4.0.0",
+    "gulp-sass": "^2.2.0",
+    "jquery": "^2.2.1",
+    "web-pingjs": "^1.0.0"
+  }
+}

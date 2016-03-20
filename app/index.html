@@ -1,0 +1,83 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Vigilant</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="css/vendor.css">
+        <link rel="stylesheet" href="css/main.css">
+    </head>
+    <body>
+
+    <div class="container">
+        <header class=" clearfix">
+            <div class="interval-panel" style="width: 700px">
+                <div class="row small">
+                    <div class="col-md-2">real-time</div>
+                    <div class="col-md-2">paranoid</div>
+                    <div class="col-md-2">constantly</div>
+                    <div class="col-md-2">regularly</div>
+                    <div class="col-md-2">sometimes</div>
+                    <div class="col-md-2">rarely</div>
+                </div>
+                <input type="range" id="interval" min="0" max="5" value="3">
+                <div class="row small">
+                    <div class="col-md-2">1 second</div>
+                    <div class="col-md-2">30 seconds</div>
+                    <div class="col-md-2">5 minutes</div>
+                    <div class="col-md-2">30 minutes</div>
+                    <div class="col-md-2">1 hour</div>
+                    <div class="col-md-2">4 hours</div>
+                </div>
+            </div>
+
+            <h1 class="">Vigilant</h1>
+
+            <nav>
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="active">
+                        <a href="#apps" role="tab" data-toggle="tab"><h4>apps</h4></a>
+                    </li>
+                    <li>
+                        <a href="#servers" role="tab" data-toggle="tab"><h4>servers</h3></a>
+                    </li>
+                </ul>
+            </nav>
+        </header>
+
+        <main class="tab-content">
+            <section id="apps" class="tab-pane active">
+                <table class="table table-striped table-bordered table-hover">
+                    <tr>
+                        <th width="250">URL</th>
+                        <th width="150">HTTP Status</th>
+                        <th>Latency</th>
+                    </tr>
+                </table>
+            </section>
+            <section id="servers" class="tab-pane">
+                <table class="table table-striped table-bordered table-hover">
+                    <tr>
+                        <th width="250">IP</th>
+                        <th width="150">Status</th>
+                        <th>Latency</th>
+                    </tr>
+                </table>
+            </section>
+        </main>
+
+        <div class="">
+            <footer class="">
+                <h3></h3>
+            </footer>
+        </div>
+    </div>
+
+        <script src="js/vendor.js"></script>
+        <script src="js/main.js"></script>
+        <script src="user.config.json"></script>
+    </body>
+</html>

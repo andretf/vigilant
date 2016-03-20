@@ -1,0 +1,47 @@
+.interval-panel {
+  border-radius: 3px;
+  box-shadow: 1px 1px 5px 0 #666;
+  font-size: 0.9em;
+  float: right;
+  padding: 0 10px; }
+  .interval-panel .row {
+    margin: 0; }
+    .interval-panel .row div {
+      text-align: center; }
+
+input[type=range] {
+  padding: 0 8.33333%; }
+
+main .table a, main .table span {
+  height: 20px; }
+main .table td, main .table td small {
+  position: relative;
+  z-index: 10; }
+
+.progress {
+  border-radius: 0;
+  display: inline-block;
+  height: 6px;
+  margin: 0; }
+
+.progress-bar {
+  box-shadow: 0; }
+
+.bg-latency {
+  opacity: 0.4;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 0; }
+
+.good {
+  background: #5cb85c; }
+
+.acceptable {
+  background: #f0ad4e; }
+
+.unacceptable {
+  background: #d9534f; }
+
+/*# sourceMappingURL=main.css.map */
