@@ -10,14 +10,14 @@
 Example JSON config:
 ```
 {
-  "apps": ["google.com", "localhost/myApp"],
-  "servers": [ "google.com", "192.168.0.1"]
+  "apps": ["http://google.com", "http://localhost/myApp"],
+  "servers": [ "http://google.com", "http://192.168.0.1"]
 }
 ```
 
 **TODO:**<br>
 \+ Option "instant vs average (recent weighted pondend)"<br>
-\- Remove unecessary dependencies
+\- Remove unnecessary dependencies
 
 ##Authoring
 - Andre Figueiredo <andretf.inf@gmail.com>

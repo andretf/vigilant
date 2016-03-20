@@ -3,8 +3,8 @@
 
   var intervalFn;
   var thresholds = {
-    good: 400,
-    acceptable: 800
+    good: 100,
+    acceptable: 300
   };
 
   var jsdom = {
@@ -26,7 +26,7 @@
 
     return '\
       <div class="bg-latency '+latencyClass+'" style="width:'+width+'px"></div>\
-      <small>' + delta + 'ms</small>';
+      <small>' + parseInt(delta) + 'ms</small>';
   }
 
   function setup() {
@@ -88,29 +88,42 @@
   }
 
   function updateInfo() {
-    jsdom.apps.forEach(function (app) {
-      var proxyUrl = 'http://whateverorigin.org/get?url={0}&callback=?';
-      $.getJSON(proxyUrl.replace('{0}', encodeURIComponent(app.url)))
-        .done(function (_, __, jqXHR) {
-          app.$status.text(jqXHR.status + ' : ' + jqXHR.statusText);
-        })
-        .fail(function (jqXHR) {
-          app.$status.text(jqXHR.status + ' : ' + jqXHR.statusText + '');
-        });
+    var token = false;
 
-      ping(app.url).then(function (delta) {
-        app.$latency.html(getLatencyUI(delta));
-      }).catch(function (err) {
-        app.$latency.text('Could not reach URL: ' + err);
-      });
+    jsdom.apps.forEach(function (app) {
+      setTimeout(function () {
+        var proxyUrl = 'http://whateverorigin.org/get?url={0}&callback=?';
+        $.getJSON(proxyUrl.replace('{0}', encodeURIComponent(app.url)))
+          .done(function (_, __, jqXHR) {
+            app.$status.text(jqXHR.status + ' : ' + jqXHR.statusText);
+          })
+          .fail(function (jqXHR) {
+            app.$status.text(jqXHR.status + ' : ' + jqXHR.statusText + '');
+          });
+      }, 0);
+
+      setTimeout(function () {
+        ping(app.url)
+          .then(function (delta) {
+            app.$latency.html(getLatencyUI(delta));
+          })
+          .catch(function (err) {
+            app.$latency.text('Could not reach URL: ' + err);
+          });
+      }, Math.random() * 1000 * 10);
     });
 
     jsdom.servers.forEach(function (server) {
-      ping(server.ip).then(function (delta) {
-        server.$latency.html(getLatencyUI(delta));
-      }).catch(function (err) {
-        server.$latency.text('Could not reach URL: ' + err);
-      });
+      setTimeout(
+        function () {
+          ping(server.ip)
+            .then(function (delta) {
+              server.$latency.html(getLatencyUI(delta));
+            })
+            .catch(function (err) {
+              server.$latency.text('Could not reach URL: ' + err);
+            });
+        }, Math.random() * 1000 * 10);
     });
   }
 
