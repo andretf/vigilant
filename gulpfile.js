@@ -42,6 +42,7 @@ gulp.task('serve', ['vendors', 'sass'], function() {
   });
 
   gulp.watch("app/scss/*.scss", ['sass']);
+  gulp.watch("app/**/*.js").on('change', browserSync.reload);
   gulp.watch("app/*.html").on('change', browserSync.reload);
 });
 
