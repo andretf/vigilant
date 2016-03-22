@@ -1,130 +1,202 @@
 (function() {
   'use strict';
-
   var intervalFn;
-  var thresholds = {
-    good: 100,
-    acceptable: 300
+  var jsdom = {
+    pane: {
+      active: $('.tab-pane.active'),
+      apps: $(document.getElementById('apps')),
+      servers: $(document.getElementById('servers'))
+    }
   };
 
-  var jsdom = {
-    apps : [],
-    servers: []
-  };
+  var vigilant = (function() {
+    var proxyUrl = 'http://whateverorigin.org/get?url={0}&callback=?';
+    var apps = [], servers = [], pipeStack = [];
+
+    var item = function (address, $uiStatus, $uiLatency) {
+      var result = {
+        address: address,
+        ui: {
+          $status: $uiStatus,
+          $latency: $uiLatency,
+          updateStatus: function (code, text) {
+            result.ui.$status.text(code + ' : ' + text);
+          },
+          updateLatency: function (latency) {
+            if (jsdom.pane.active[0].id === 'servers') {
+              var statusHtml = '<span class="btn btn-{0}">{1}</span>';
+              if (isNaN(latency)) {
+                result.ui.$status.html(statusHtml.replace('{0}', 'danger').replace('{1}', ''));
+                return;
+              }
+              result.ui.$status.html(statusHtml.replace('{0}', 'success').replace('{1}', ''));
+            }
+
+            result.ui.$latency.html(getLatencyUI(latency));
+          }
+        }
+      };
+
+      return result;
+    };
+
+    function add(address, $uiStatus, $uiLatency) {
+      var newItem = new item(address, $uiStatus, $uiLatency);
+      this.push(newItem);
+      return this;
+    }
+    apps.add = add;
+    servers.add = add;
+
+    return {
+      threshold: {
+        good: 100,
+        acceptable: 300
+      },
+      apps: apps,
+      servers: servers,
+
+      getHttpStatus: function (index) {
+        this.idle = false;
+        var response;
+        var item = vigilant.apps[index |= 0];
+
+        if (item !== undefined) {
+          setTimeout(function () {
+            $.ajax({
+                dataType: "json",
+                url: proxyUrl.replace('{0}', encodeURIComponent(item.address)),
+                timeout: 2000
+              })
+              .always(function (first, textStatus, last) {
+                response = textStatus === 'success' ? last : first;
+                item.ui.updateStatus(response.status, response.statusText);
+                if (++index === vigilant.apps.length) {
+                  return vigilant.resolve();
+                }
+                vigilant.getHttpStatus(index);
+              });
+          }, 0);
+        }
+        return this;
+      },
+
+      ping: function (category, index) {
+        this.idle = false;
+        index |= 0;
+        var item = vigilant[category][index];
+
+        setTimeout(function () {
+          ping(item.address, 0.75)
+            .then(function (delta) {
+              item.ui.updateLatency(delta);
+            })
+            .catch(function (delta) {
+              item.ui.updateLatency(delta);
+            })
+            .then(function () {
+              if (++index === vigilant[category].length) {
+                return vigilant.resolve();
+              }
+              vigilant.ping(category, index);
+            });
+        }, 0);
+
+        return this;
+      },
+
+      then: function(callback){
+        pipeStack.push(callback);
+        return this;
+      },
+      resolve: function () {
+        var callback = pipeStack.shift();
+        if (typeof callback === 'function') {
+          callback();
+        }
+        if (!pipeStack.length){
+          this.idle = true;
+        }
+      },
+      idle: true
+    }
+  }());
+
 
   function getLatencyUI(delta) {
-    var maxWidth = $('.tab-pane.active').find('> table th').last().width() - 50;
-    var width = Math.min(delta/2, maxWidth);
-    var latencyClass = 'unacceptable';
-
-    if (delta < thresholds.good) {
-      latencyClass = 'good';
-    }
-    else if (delta < thresholds.acceptable) {
-      latencyClass = 'acceptable';
+    if (delta < 0){
+      return 'Could not reach address.';
     }
 
+    var maxWidth = jsdom.pane.active.find('> table th').last().width() - 50;
+    var width = Math.min(delta / 2, maxWidth);
+    var latencyClass =
+      delta < vigilant.threshold.good ? 'good' :
+        delta < vigilant.threshold.acceptable ? 'acceptable' : 'unacceptable';
     return '\
-      <div class="bg-latency '+latencyClass+'" style="width:'+width+'px"></div>\
+      <div class="bg-latency ' + latencyClass + '" style="width:' + width + 'px"></div>\
       <small>' + parseInt(delta) + 'ms</small>';
   }
 
   function setup() {
+    var onResolve = null;
+
+    function resolve() {
+      if (typeof onResolve === 'function') {
+        onResolve();
+      }
+    }
+
+    function addAll(config, category) {
+      var list = config[category];
+      list.forEach(function (addr) {
+        var $tr = $('\
+        <tr>\
+          <td>\
+            <a href="' + addr + '" target="_blank">' + addr + '</a>\
+          </td>\
+        </tr>');
+        var $status = $('<td></td>');
+        var $latency = $('<td>reaching...</td>');
+
+        $tr.append($status).append($latency);
+        jsdom.pane[category].find('table').append($tr);
+
+        vigilant[category].add(addr, $status, $latency);
+      });
+    }
+
     $.getJSON('user.config.json')
       .done(function (config) {
-        addApps(config.apps);
-        addServers(config.servers);
-        setTimeout(updateInfo, 1000);
+        addAll(config, 'apps');
+        addAll(config, 'servers');
+        resolve();
       });
 
     $.ajaxSetup({
       scriptCharset: "utf-8",
       contentType: "application/json; charset=utf-8"
     });
-  }
 
-  function addApps(apps) {
-    apps.forEach(function (url) {
-      var $tr = $('\
-        <tr>\
-          <td role="url">\
-            <a href="' + url + '" target="_blank">' + url + '</a>\
-          </td>\
-        </tr>');
-      var $status = $('<td role="status"></td>');
-      var $latency = $('<td role="latency">reaching website...</td>');
-
-      $tr.append($status).append($latency);
-      $('#apps').find('table').append($tr);
-
-      jsdom.apps.push({
-        url: url,
-        $status: $status,
-        $latency: $latency
-      });
-    });
-  }
-
-  function addServers(servers) {
-    servers.forEach(function (ip) {
-      var $tr = $('\
-        <tr>\
-          <td role="ip">\
-            <a href="' + ip + '" target="_blank">' + ip + '</a>\
-          </td>\
-        </tr>');
-      var $status = $('<td role="status"></td>');
-      var $latency = $('<td role="latency">reaching server...</td>');
-
-      $tr.append($status).append($latency);
-      $('#servers').find('table').append($tr);
-
-      jsdom.servers.push({
-        ip: ip,
-        $status: $status,
-        $latency: $latency
-      });
-    });
+    return {
+      then: function(callback){
+         onResolve = callback;
+      }
+    }
   }
 
   function updateInfo() {
-    var token = false;
-
-    jsdom.apps.forEach(function (app) {
-      setTimeout(function () {
-        var proxyUrl = 'http://whateverorigin.org/get?url={0}&callback=?';
-        $.getJSON(proxyUrl.replace('{0}', encodeURIComponent(app.url)))
-          .done(function (_, __, jqXHR) {
-            app.$status.text(jqXHR.status + ' : ' + jqXHR.statusText);
-          })
-          .fail(function (jqXHR) {
-            app.$status.text(jqXHR.status + ' : ' + jqXHR.statusText + '');
-          });
-      }, 0);
-
-      setTimeout(function () {
-        ping(app.url)
-          .then(function (delta) {
-            app.$latency.html(getLatencyUI(delta));
-          })
-          .catch(function (err) {
-            app.$latency.text('Could not reach URL: ' + err);
-          });
-      }, Math.random() * 1000 * 10);
-    });
-
-    jsdom.servers.forEach(function (server) {
-      setTimeout(
-        function () {
-          ping(server.ip)
-            .then(function (delta) {
-              server.$latency.html(getLatencyUI(delta));
-            })
-            .catch(function (err) {
-              server.$latency.text('Could not reach URL: ' + err);
-            });
-        }, Math.random() * 1000 * 10);
-    });
+    if (vigilant.idle) {
+      jsdom.pane.active = $('.tab-pane.active');
+      if (jsdom.pane.active[0].id === 'apps') {
+        vigilant.getHttpStatus().then(function () {
+          vigilant.ping('apps');
+        });
+      }
+      else if (jsdom.pane.active[0].id === 'servers') {
+        vigilant.ping('servers');
+      }
+    }
   }
 
   function setUpdateFrequency() {
@@ -137,7 +209,9 @@
   }
 
   $(document).ready(function () {
-    setup();
+    setTimeout(function(){
+      setup().then(updateInfo);
+    }, 100);
     setUpdateFrequency();
     document.getElementById('interval').onchange = setUpdateFrequency;
   });

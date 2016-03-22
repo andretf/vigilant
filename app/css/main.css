@@ -1,7 +1,7 @@
 .interval-panel {
   border-radius: 3px;
   box-shadow: 1px 1px 5px 0 #666;
-  font-size: .9em;
+  font-size: 0.9em;
   float: right;
   padding: 0 10px; }
   .interval-panel .row {
@@ -14,7 +14,8 @@ input[type=range] {
 
 main .table a, main .table span {
   height: 20px; }
-
+main .table .btn {
+  padding: 0 8px; }
 main .table td, main .table td small {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -46,3 +47,5 @@ main .table td, main .table td small {
 
 .unacceptable {
   background: #d9534f; }
+
+/*# sourceMappingURL=main.css.map */

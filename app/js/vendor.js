@@ -42,6 +42,6 @@ var ping = function(url, multiplier) {
         request_image(url).then(response).catch(response);
         
         // Set a timeout for max-pings, 5s.
-        setTimeout(function() { reject(Error('Timeout')); }, 5000);
+        setTimeout(function() { reject(Error('Timeout')); }, 2000);
     });
 };
