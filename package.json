@@ -28,7 +28,7 @@
     "gulp-concat": "^2.6.0",
     "gulp-filter": "^4.0.0",
     "gulp-sass": "^2.2.0",
-    "jquery": "^2.2.1",
+    "jquery": "^3.0.0",
     "web-pingjs": "^1.0.0"
   }
 }
